@@ -146,17 +146,17 @@ source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} XLUA_CORE)
 #begin lua-rapidjson
 set (RAPIDJSON_SRC lua-rapidjson/source/rapidjson.cpp)
 set_property(
-    SOURCE ${RAPIDJSON_SRC}
-    APPEND
-    PROPERTY COMPILE_DEFINITIONS
-    LUA_LIB
+	SOURCE ${RAPIDJSON_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
 )
 list(APPEND THIRDPART_INC  lua-rapidjson/include)
 set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
 #end lua-rapidjson
 
 #begin pbc
-set (PBC_SRC
+set (PBC_SRC 
 	pbc/src/alloc.c
 	pbc/src/array.c
 	pbc/src/bootstrap.c
@@ -171,7 +171,8 @@ set (PBC_SRC
 	pbc/src/varint.c
 	pbc/src/wmessage.c
 )
-if(USING_LUAJIT)
+
+if (USING_LUAJIT)
 	list(APPEND PBC_SRC pbc pbc/binding/lua/pbc-lua.c)
 else ()
 	list(APPEND PBC_SRC pbc pbc/binding/lua53/pbc-lua53.c)

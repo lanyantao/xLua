@@ -40,6 +40,51 @@ endif()
 set(LUA_SRC_PATH lua-${LUA_VERSION}/src)
 set(LUAJIT_SRC_PATH luajit-2.1.0b3/src)
 
+#begin lua-rapidjson
+set (RAPIDJSON_SRC lua-rapidjson/source/rapidjson.cpp)
+set_property(
+	SOURCE ${RAPIDJSON_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC  lua-rapidjson/include)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
+#end lua-rapidjson
+
+#begin pbc
+set (PBC_SRC 
+	pbc/src/alloc.c
+	pbc/src/array.c
+	pbc/src/bootstrap.c
+	pbc/src/context.c
+	pbc/src/decode.c
+	pbc/src/map.c
+	pbc/src/pattern.c
+	pbc/src/proto.c
+	pbc/src/register.c
+	pbc/src/rmessage.c
+	pbc/src/stringpool.c
+	pbc/src/varint.c
+	pbc/src/wmessage.c
+)
+
+if (USING_LUAJIT)
+	list(APPEND PBC_SRC pbc pbc/binding/lua/pbc-lua.c)
+else ()
+	list(APPEND PBC_SRC pbc pbc/binding/lua53/pbc-lua53.c)
+endif ()
+
+set_property(
+	SOURCE ${PBC_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC pbc pbc/src)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${PBC_SRC})
+#end pbc
+
 if (USING_LUAJIT)
 	
     if (APPLE AND NOT IOS AND NOT ANDROID)
@@ -142,51 +187,6 @@ source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} LUA_SOCKET)
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} LUA_CORE)
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} LUA_LIB)
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} XLUA_CORE)
-
-#begin lua-rapidjson
-set (RAPIDJSON_SRC lua-rapidjson/source/rapidjson.cpp)
-set_property(
-	SOURCE ${RAPIDJSON_SRC}
-	APPEND
-	PROPERTY COMPILE_DEFINITIONS
-	LUA_LIB
-)
-list(APPEND THIRDPART_INC  lua-rapidjson/include)
-set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
-#end lua-rapidjson
-
-#begin pbc
-set (PBC_SRC 
-	pbc/src/alloc.c
-	pbc/src/array.c
-	pbc/src/bootstrap.c
-	pbc/src/context.c
-	pbc/src/decode.c
-	pbc/src/map.c
-	pbc/src/pattern.c
-	pbc/src/proto.c
-	pbc/src/register.c
-	pbc/src/rmessage.c
-	pbc/src/stringpool.c
-	pbc/src/varint.c
-	pbc/src/wmessage.c
-)
-
-if (USING_LUAJIT)
-	list(APPEND PBC_SRC pbc pbc/binding/lua/pbc-lua.c)
-else ()
-	list(APPEND PBC_SRC pbc pbc/binding/lua53/pbc-lua53.c)
-endif ()
-
-set_property(
-	SOURCE ${PBC_SRC}
-	APPEND
-	PROPERTY COMPILE_DEFINITIONS
-	LUA_LIB
-)
-list(APPEND THIRDPART_INC pbc pbc/src)
-set (THIRDPART_SRC ${THIRDPART_SRC} ${PBC_SRC})
-#end pbc
 
 if (APPLE)
     if (IOS)

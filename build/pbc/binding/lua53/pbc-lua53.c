@@ -868,7 +868,8 @@ _add_rmessage(lua_State *L) {
 	return 0;
 }
 
-LUA_API int luaopen_protobuf_c(lua_State *L) {
+LUA_API int
+luaopen_protobuf_c(lua_State *L) {
 	luaL_Reg reg[] = {
 		{"_env_new" , _env_new },
 		{"_env_register" , _env_register },

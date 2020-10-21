@@ -49,6 +49,8 @@ extern "C" {
 
 #define UNUSED(x) ((void)(x))  /* to avoid warnings */
 
+#include "i64lib.h"
+
 static inline void *
 checkuserdata(lua_State *L, int index) {
 	void * ud = lua_touserdata(L,index);
@@ -167,7 +169,7 @@ _rmessage_int52(lua_State *L) {
 	uint32_t hi,low;
 	low = pbc_rmessage_integer(m, key, index, &hi);
 	int64_t v = (int64_t)((uint64_t)hi << 32 | (uint64_t)low);
-	lua_pushnumber(L,(lua_Number)v);
+	lua_pushint64(L, v);
 
 	return 1;
 }
@@ -180,7 +182,7 @@ _rmessage_uint52(lua_State *L) {
 	uint32_t hi,low;
 	low = pbc_rmessage_integer(m, key, index, &hi);
 	uint64_t v = (uint64_t)hi << 32 | (uint64_t)low;
-	lua_pushnumber(L,(lua_Number)v);
+	lua_pushuint64(L, v);
 
 	return 1;
 }
@@ -350,6 +352,11 @@ _wmessage_int64(lua_State *L) {
 		pbc_wmessage_integer(m, key, (uint32_t)v64 , (uint32_t)(v64>>32));
 		break;
 	}
+	case LUA_TUSERDATA : {
+		uint64_t v64 = lua_touint64(L, 3);
+		pbc_wmessage_integer(m, key, (uint32_t)v64 , (uint32_t)(v64>>32));
+		break;
+	}
 	default :
 		return luaL_error(L, "Need an int64 type");
 	}
@@ -360,7 +367,7 @@ static int
 _wmessage_int52(lua_State *L) {
 	struct pbc_wmessage * m = (struct pbc_wmessage *)checkuserdata(L,1);
 	const char * key = luaL_checkstring(L,2);
-	int64_t number = (int64_t)(luaL_checknumber(L,3));
+	int64_t number = lua_toint64(L,3);
 	uint32_t hi = (uint32_t)(number >> 32);
 	pbc_wmessage_integer(m, key, (uint32_t)number, hi);
 
@@ -371,11 +378,7 @@ static int
 _wmessage_uint52(lua_State *L) {
 	struct pbc_wmessage * m = (struct pbc_wmessage *)checkuserdata(L,1);
 	const char * key = luaL_checkstring(L,2);
-	lua_Number v = (luaL_checknumber(L,3));
-	if (v < 0) {
-		return luaL_error(L, "negative number : %f passed to unsigned field",v);
-	}
-	uint64_t number = (uint64_t)v;
+	uint64_t number = lua_touint64(L,3);
 	uint32_t hi = (uint32_t)(number >> 32);
 	pbc_wmessage_integer(m, key, (uint32_t)number, hi);
 
@@ -445,7 +448,7 @@ _push_value(lua_State *L, char * ptr, char type) {
 		case 'u': {
 			uint64_t v = *(uint64_t*)ptr;
 			ptr += 8;
-			lua_pushnumber(L,(lua_Number)v);
+			lua_pushuint64(L, v);
 			break;
 		}
 		case 'i': {
@@ -474,7 +477,7 @@ _push_value(lua_State *L, char * ptr, char type) {
 		case 'd': {
 			int64_t v = *(int64_t*)ptr;
 			ptr += 8;
-			lua_pushnumber(L,(lua_Number)v);
+			lua_pushint64(L, v);
 			break;
 		}
 		case 'r': {
@@ -515,14 +518,14 @@ _push_array(lua_State *L, pbc_array array, char type, int index) {
 		uint32_t hi = 0;
 		uint32_t low = pbc_array_integer(array, index, &hi);
 		uint64_t v = (uint64_t)hi << 32 | (uint64_t)low;
-		lua_pushnumber(L, (lua_Number)v);
+		lua_pushuint64(L, v);
 		break;
 	}
 	case 'D': {
 		uint32_t hi = 0;
 		uint32_t low = pbc_array_integer(array, index, &hi);
 		uint64_t v = (uint64_t)hi << 32 | (uint64_t)low;
-		lua_pushnumber(L, (lua_Number)((int64_t)v));
+		lua_pushint64(L, (int64_t)v);
 		break;
 	}
 	case 'B': {
@@ -921,12 +924,12 @@ push_value(lua_State *L, int type, const char * type_name, union pbc_value *v) {
 		break;
 	case PBC_INT64: {
 		uint64_t v64 = (uint64_t)(v->i.hi) << 32 | (uint64_t)(v->i.low);
-		lua_pushnumber(L,(lua_Number)(int64_t)v64);
+		lua_pushint64(L,(int64_t)v64);
 		break;
 	}
 	case PBC_UINT: {
 		uint64_t v64 = (uint64_t)(v->i.hi) << 32 | (uint64_t)(v->i.low);
-		lua_pushnumber(L,(lua_Number)v64);
+		lua_pushuint64(L, v64);
 		break;
 	}
 	default:
@@ -1076,7 +1079,7 @@ _add_rmessage(lua_State *L) {
 extern "C" {
 #endif
 
-int
+LUA_API int
 luaopen_protobuf_c(lua_State *L) {
 	luaL_Reg reg[] = {
 		{"_env_new" , _env_new },

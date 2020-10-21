@@ -21,13 +21,13 @@
 #define PBC_UNKNOWN 12
 #define PBC_REPEATED 128
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef _MSC_VER
+typedef enum { false = 0,
+	       true = !false } bool;
 #endif
 
-#ifdef _MSC_VER
-typedef enum {false = 0,
-true = !false} bool;
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 typedef struct _pbc_array { char _data[PBC_ARRAY_CAP]; } pbc_array[1];

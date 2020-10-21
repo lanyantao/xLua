@@ -143,35 +143,69 @@ source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} LUA_CORE)
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} LUA_LIB)
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} XLUA_CORE)
 
-#begin sproto
-set (SPROTO sproto/sproto.c sproto/lsproto.c)
+#begin lpeg
+#set ( LPEG_SRC
+#    lpeg/lpcap.c
+#    lpeg/lpcode.c
+#    lpeg/lpprint.c
+#    lpeg/lptree.c
+#    lpeg/lpvm.c
+#)
+#set_property(
+#    SOURCE ${LPEG_SRC}
+#    APPEND
+#    PROPERTY COMPILE_DEFINITIONS
+#    LUA_LIB
+#)
+#list(APPEND THIRDPART_INC lpeg)
+#set (THIRDPART_SRC ${THIRDPART_SRC} ${LPEG_SRC})
+#end lpeg
+
+#begin lua-rapidjson
+set (RAPIDJSON_SRC 
+	lua-rapidjson/source/rapidjson.cpp
+)
 set_property(
-	SOURCE ${SPROTO}
+	SOURCE ${RAPIDJSON_SRC}
 	APPEND
 	PROPERTY COMPILE_DEFINITIONS
 	LUA_LIB
 )
-list(APPEND THIRDPART_INC sproto)
-set (THIRDPART_SRC ${THIRDPART_SRC} ${SPROTO})
-#end sproto
+list(APPEND THIRDPART_INC lua-rapidjson/include)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
+#end lua-rapidjson
 
-#begin lpeg
-set ( LPEG_SRC
-    lpeg/lpcap.c
-    lpeg/lpcode.c
-    lpeg/lpprint.c
-    lpeg/lptree.c
-    lpeg/lpvm.c
+#begin pbc
+set (PBC_SRC
+	pbc/src/alloc.c
+	pbc/src/array.c
+	pbc/src/bootstrap.c
+	pbc/src/context.c
+	pbc/src/decode.c
+	pbc/src/map.c
+	pbc/src/pattern.c
+	pbc/src/proto.c
+	pbc/src/register.c
+	pbc/src/rmessage.c
+	pbc/src/stringpool.c
+	pbc/src/varint.c
+	pbc/src/wmessage.c
 )
+if(USING_LUAJIT)
+	list(APPEND PBC_SRC pbc pbc/binding/lua/pbc-lua.c)
+else ()
+	list(APPEND PBC_SRC pbc pbc/binding/lua53/pbc-lua53.c)
+endif ()
+
 set_property(
-    SOURCE ${LPEG_SRC}
-    APPEND
-    PROPERTY COMPILE_DEFINITIONS
-    LUA_LIB
+	SOURCE ${PBC_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
 )
-list(APPEND THIRDPART_INC lpeg)
-set (THIRDPART_SRC ${THIRDPART_SRC} ${LPEG_SRC})
-#end lpeg
+list(APPEND THIRDPART_INC pbc pbc/src)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${PBC_SRC})
+#end pbc
 
 if (APPLE)
     if (IOS)
